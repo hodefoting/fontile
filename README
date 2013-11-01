@@ -1,3 +1,4 @@
+fontile is a tile/component based font generation system. 
 0xA000 is a pixel/tile/component based font generator, as well as a
 font-family based on this. The tool itself is licensed under the ISC license;
 while the font it ships with is licensed under OFL.
