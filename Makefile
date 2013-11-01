@@ -1,26 +1,6 @@
-all: 0xA000-Regular.ttf         \
-		 0xA000-Mono.ttf            \
-		 0xA000-Bold.ttf            \
-		 0xA000-Bold-Mono.ttf       \
-		 0xA000-Semibold.ttf        \
-		 0xA000-Semibold-Mono.ttf   \
-	   0xA000-Pixelated.ttf       \
-	   0xA000-Pixelated-Mono.ttf  \
-	   0xA000-Boxes.ttf           \
-		 0xA000-Boxes-Mono.ttf      \
-	   0xA000-Dots.ttf            \
-		 0xA000-Dots-Mono.ttf       \
-	   0xA000-Monochrome.ttf      \
-	   0xA000-Monochrome-Mono.ttf \
-		 0xA000-Edit-Mono.ttf       \
-		 0xA000-Pen.ttf             \
-		 0xA000-Pen-Mono.ttf        \
-		 Beta-Regular.ttf           \
-		 Beta-Edit.ttf           	  \
-		 \
-		 Glyphs.html                \
-		 Tech.html                  \
-		 index.html
+all: tilefont-regular.ttf       \
+		 tilefont-bold.ttf          \
+		 tilefont-pixelated.ttf
 
 CFLAGS += -O2 -g
 
@@ -29,16 +9,9 @@ CFLAGS += -O2 -g
 0xA000-cgen: 0xA000-cgen.c
 	gcc $< -o $@ `pkg-config --cflags --libs gegl`
 
-0xA000-Regular.ttf: slimmed.pal
-0xA000-Mono.ttf:    slimmed.pal
-0xA000-Pen.ttf:     squiggly.pal
-0xA000-Pen-Mono.ttf: squiggly.pal
-Beta-Regular.ttf:   squiggly.pal
-Beta-Edit.ttf:      squiggly.pal
-
 %.pal: %.png 0xA000-cgen
 	./0xA000-cgen $< > $@
-%.ttf: %.asc 0xA000 5px-ascii.asc 5px-latin.asc 5px-mono.asc
+%.ttf: %.asc 0xA000 5px-ascii.asc 
 	./bake_ttf.sh `echo $< | sed s/\.asc//`
 
 %.html: %.content head.html
