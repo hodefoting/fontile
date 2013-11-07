@@ -26,6 +26,8 @@ static int author_mode = 0;
 static int y_shift = 0;
 static int rbearing_reduce = 0;
 static int inline_components = 0;
+static int fixed_width = 0;
+
 
 static int got_blank = -1; /* if this is non 0 we have a blank glyph! */
 
@@ -391,6 +393,7 @@ void import_includes (char **asc_source)
           var = g_strdup (&linebuf[strlen(prefix)]);
 
         PARSE_INT (inline_components, "inline_components ")
+        PARSE_INT (fixed_width,       "fixed_width")
         PARSE_INT (y_shift,           "y_shift ")
         PARSE_INT (rbearing_reduce,           "rbearing_reduce ")
         PARSE_INT (overlap_solid,     "overlap_solid ")
@@ -564,6 +567,8 @@ int main (int argc, char **argv)
             {
               if (maxy>0)
                 {
+                  if (fixed_width)
+                    maxx = fixed_width - 1;
                   gen_glyph (0, 0, 0, maxx, maxy-1);
                 }
               maxx = 0;
@@ -594,6 +599,8 @@ int main (int argc, char **argv)
     } while (p);
     if (maxy>0)
       {
+        if (fixed_width)
+          maxx = fixed_width - 1;
         gen_glyph (0, 0, 0, maxx, maxy-1);
       }
 
