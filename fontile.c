@@ -20,14 +20,14 @@
 #include <stdio.h>
 #include <string.h>
 
-int SCALE=100;
+int SCALE=1000;
 static int overlap_solid=1;
 static int author_mode = 0;
 static int y_shift = 0;
 static int rbearing_reduce = 0;
 static int inline_components = 0;
 static int fixed_width = 0;
-
+static int fixed_height = 0;
 
 static int got_blank = -1; /* if this is non 0 we have a blank glyph! */
 
@@ -385,6 +385,10 @@ void import_includes (char **asc_source)
         else if (g_str_has_prefix (linebuf, "authormode"))
           author_mode = 1;
 
+/* XXX: locale dependent */
+#define PARSE_FLOAT(var, prefix) \
+        else if (g_str_has_prefix (linebuf, prefix)) \
+          var = atof (&linebuf[strlen(prefix)]);
 #define PARSE_INT(var, prefix) \
         else if (g_str_has_prefix (linebuf, prefix)) \
           var = atoi (&linebuf[strlen(prefix)]);
@@ -394,6 +398,7 @@ void import_includes (char **asc_source)
 
         PARSE_INT (inline_components, "inline_components ")
         PARSE_INT (fixed_width,       "fixed_width")
+        PARSE_INT (fixed_height,      "fixed_height")
         PARSE_INT (y_shift,           "y_shift ")
         PARSE_INT (rbearing_reduce,           "rbearing_reduce ")
         PARSE_INT (overlap_solid,     "overlap_solid ")
@@ -569,6 +574,8 @@ int main (int argc, char **argv)
                 {
                   if (fixed_width)
                     maxx = fixed_width - 1;
+                  if (fixed_height)
+                    maxy = fixed_height - 1;
                   gen_glyph (0, 0, 0, maxx, maxy-1);
                 }
               maxx = 0;
@@ -601,6 +608,8 @@ int main (int argc, char **argv)
       {
         if (fixed_width)
           maxx = fixed_width - 1;
+        if (fixed_height)
+          maxy = fixed_height - 1;
         gen_glyph (0, 0, 0, maxx, maxy-1);
       }
 
