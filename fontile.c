@@ -24,10 +24,13 @@ int SCALE=1000;
 static int overlap_solid=1;
 static int author_mode = 0;
 static int y_shift = 0;
+static int x_shift = 0;
 static int rbearing_reduce = 0;
 static int inline_components = 0;
 static int fixed_width = 0;
 static int fixed_height = 0;
+static int draw_grid = 0;
+
 
 static int got_blank = -1; /* if this is non 0 we have a blank glyph! */
 
@@ -243,6 +246,42 @@ void gen_ref_glyph (Mapping *mapping, int xw, int xh)
   g_string_free (str, TRUE);
 }
 
+static void add_grid (GString *str, int x0, int y0, int x1, int y1)
+{
+  int x, y;
+
+  x0 -= 1;
+  y0 -= 1;
+
+  for (x = x0; x < x1; x ++)
+  {
+    g_string_append_printf (str, "<contour>\n");
+    g_string_append_printf (str, "<point type='line' x='%f' y='%f'/>\n",
+                            x * SCALE - SCALE * 0.02, y1 * SCALE * 1.0);
+    g_string_append_printf (str, "<point type='line' x='%f' y='%f'/>\n",
+                            x * SCALE + SCALE * 0.02, y1 * SCALE * 1.0);
+    g_string_append_printf (str, "<point type='line' x='%f' y='%f'/>\n",
+                            x * SCALE + SCALE * 0.02, y0 * SCALE * 1.0);
+    g_string_append_printf (str, "<point type='line' x='%f' y='%f'/>\n",
+                            x * SCALE - SCALE * 0.02, y0 * SCALE * 1.0);
+    g_string_append_printf (str, "</contour>\n");
+  }
+  for (y = y0; y < y1; y ++)
+  {
+    g_string_append_printf (str, "<contour>\n");
+    g_string_append_printf (str, "<point type='line' x='%f' y='%f'/>\n",
+                                 x0 * SCALE * 1.0, y * SCALE * 1.0 - SCALE * 0.02);
+    g_string_append_printf (str, "<point type='line' x='%f' y='%f'/>\n",
+                                 x1 * SCALE * 1.0, y * SCALE * 1.0 - SCALE * 0.02);
+    g_string_append_printf (str, "<point type='line' x='%f' y='%f'/>\n",
+                                 x1 * SCALE * 1.0, y * SCALE * 1.0 + SCALE * 0.02);
+    g_string_append_printf (str, "<point type='line' x='%f' y='%f'/>\n",
+                                 x0 * SCALE * 1.0, y * SCALE * 1.0 + SCALE * 0.02);
+    g_string_append_printf (str, "</contour>\n");
+  }
+
+}
+
 static void glyph_add_component (GString *str, const char *name, int x, int y)
 {
   if (!strcmp (name, "blank") && got_blank == 0)
@@ -287,7 +326,7 @@ void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
     for (x = x0; x <= x1; x++)
       {
         int *pix = &fb[stride * y+x];
-        int u = x - x0;
+        int u = x - x0 + x_shift;
         int v = y1 - y -1 + y_shift;
         if (*pix == C_SOLID)
           {
@@ -311,7 +350,7 @@ void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
     for (x = x0; x <= x1; x++)
       {
         int *pix = &fb[stride * y+x];
-        int u = x - x0;
+        int u = x - x0 + x_shift;
         int v = y1 - y -1 + y_shift;
         const char *component = NULL;
 
@@ -323,6 +362,11 @@ void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
         if (component)
           glyph_add_component (str, component, u, v);
       }
+
+  if (draw_grid)
+  {
+    add_grid (str, x0, y0, x1, y1);
+  }
 
   write_glyph (name, (x1-x0+1) * SCALE, uglyphs[glyph_no], str->str);
 
@@ -397,10 +441,12 @@ void import_includes (char **asc_source)
           var = g_strdup (&linebuf[strlen(prefix)]);
 
         PARSE_INT (inline_components, "inline_components ")
+        PARSE_INT (draw_grid,         "draw_grid ")
         PARSE_INT (fixed_width,       "fixed_width")
         PARSE_INT (fixed_height,      "fixed_height")
         PARSE_INT (y_shift,           "y_shift ")
-        PARSE_INT (rbearing_reduce,           "rbearing_reduce ")
+        PARSE_INT (x_shift,           "x_shift ")
+        PARSE_INT (rbearing_reduce,   "rbearing_reduce ")
         PARSE_INT (overlap_solid,     "overlap_solid ")
         PARSE_INT (SCALE,             "scale ")
         PARSE_STRING (font_variant,   "variant ")
