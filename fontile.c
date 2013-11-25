@@ -30,7 +30,7 @@ static int inline_components = 0;
 static int fixed_width = 0;
 static int fixed_height = 0;
 static int draw_grid = 0;
-
+static float xtrim = 0;
 
 static int got_blank = -1; /* if this is non 0 we have a blank glyph! */
 
@@ -225,7 +225,7 @@ char *load_component_outline (const char *name, int xoffset, int yoffset)
                 int y;
                 sscanf (buf, "    <point type='%s x='%d' y='%d'/>", &type, &x, &y);
                 type[strlen(type)-1]=0;
-                g_string_append_printf (str, "    <point type='%s' x='%d' y='%d'/>\n",  type, x + xoffset * SCALE, y + yoffset * SCALE);
+                g_string_append_printf (str, "    <point type='%s' x='%d' y='%d'/>\n",  type, (int)(x + (xoffset + xtrim) * SCALE), y + yoffset * SCALE);
               }
           }
       }
@@ -296,7 +296,7 @@ static void glyph_add_component (GString *str, const char *name, int x, int y)
   else
     g_string_append_printf (str,
         "  <component base=\"%s\" xOffset=\"%d\" yOffset=\"%d\"/>\n",
-        name, x * SCALE, y * SCALE); 
+        name, x * SCALE + xtrim * SCALE, y * SCALE); 
 }
 
 void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
@@ -636,6 +636,10 @@ int main (int argc, char **argv)
                 free (fb);
               fb = g_malloc0 (256*256 * sizeof(int));
               stride = 256;
+              if (strstr (linebuf, "xtrim="))
+                xtrim = atof (strstr (linebuf, "xtrim=") + strlen("xtrim="));
+              else
+                xtrim = 0.0;
             }
           else
             {
@@ -843,7 +847,6 @@ void add_gray_block_circle (float fill_ratio, float paramA, float paramB)
   add_scaled_point ('c', 0.29, 0.89, fill_ratio);
   add_scaled_point ('c', 0.11, 0.71, fill_ratio);
   add_scaled_point ('C', 0.11, 0.50, fill_ratio);
-
 }
 
 void add_gray_block (float fill_ratio, float paramA, float paramB)
