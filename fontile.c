@@ -251,7 +251,7 @@ static void add_grid (GString *str, int x0, int y0, int x1, int y1)
   int x, y;
 
   x0 -= 1;
-  y0 -= 1;
+  y0 -= 2;
 
   for (x = x0; x < x1; x ++)
   {
@@ -296,7 +296,7 @@ static void glyph_add_component (GString *str, const char *name, int x, int y)
   else
     g_string_append_printf (str,
         "  <component base=\"%s\" xOffset=\"%d\" yOffset=\"%d\"/>\n",
-        name, x * SCALE + xtrim * SCALE, y * SCALE); 
+        name, (int)(x * SCALE + xtrim * SCALE), y * SCALE); 
 }
 
 void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
@@ -311,6 +311,8 @@ void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
     return;
   char name[8];
   sprintf (name, "%04X", uglyphs[glyph_no]);
+
+  fprintf (stderr, "%s: %i %i\n", name, y1 - y0 - 1, glyph_height);
 
   if (y1 - y0 - 1> glyph_height)
     {
