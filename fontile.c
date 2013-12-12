@@ -195,7 +195,7 @@ void write_glyph (const char *name, int advance,
   g_string_free (str, TRUE);
 }
 
-char *load_component_outline (const char *name, int xoffset, int yoffset)
+char *load_component_outline (const char *name, float xoffset, float yoffset)
 {
   GString *str = g_string_new ("");
   char *data = NULL;
@@ -225,7 +225,7 @@ char *load_component_outline (const char *name, int xoffset, int yoffset)
                 int y;
                 sscanf (buf, "    <point type='%s x='%d' y='%d'/>", &type, &x, &y);
                 type[strlen(type)-1]=0;
-                g_string_append_printf (str, "    <point type='%s' x='%d' y='%d'/>\n",  type, (int)(x + (xoffset + xtrim) * SCALE), y + yoffset * SCALE);
+                g_string_append_printf (str, "    <point type='%s' x='%d' y='%d'/>\n",  type, (int)(x + (xoffset + xtrim) * SCALE), (int)(y + yoffset * SCALE));
               }
           }
       }
@@ -288,7 +288,7 @@ static void glyph_add_component (GString *str, const char *name, int x, int y)
     return;
   if (inline_components)
     {
-      char *component = load_component_outline (name, x, y);
+      char *component = load_component_outline (name, x + xtrim, y);
       g_assert (component);
       g_string_append_printf (str, "%s", component);
       g_free (component);
@@ -312,11 +312,8 @@ void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
   char name[8];
   sprintf (name, "%04X", uglyphs[glyph_no]);
 
-  fprintf (stderr, "%s: %i %i\n", name, y1 - y0 - 1, glyph_height);
-
   if (y1 - y0 - 1> glyph_height)
     {
-      fprintf (stderr, "%s %i\n", name, glyph_height);
       glyph_height = y1 - y0 + 1;
     }
 
@@ -622,6 +619,10 @@ int main (int argc, char **argv)
                 {
                   if (fixed_width)
                     maxx = fixed_width - 1;
+                  /*
+                  if (uglyphs)
+                    fprintf (stderr, "%04X %i\n", uglyphs[0], maxy);
+                  */
                   if (fixed_height)
                     maxy = fixed_height - 1;
                   gen_glyph (0, 0, 0, maxx, maxy-1);
