@@ -838,17 +838,17 @@ void add_scaled_point (int type, float x, float y, float scale)
 void add_gray_block_circle (float fill_ratio, float paramA, float paramB)
 {
   float x, y;
-  add_scaled_point ('c', 0.11, 0.29, fill_ratio);
-  add_scaled_point ('c', 0.29, 0.11, fill_ratio);
-  add_scaled_point ('C', 0.50, 0.11, fill_ratio);
-  add_scaled_point ('c', 0.71, 0.11, fill_ratio);
-  add_scaled_point ('c', 0.89, 0.29, fill_ratio);
-  add_scaled_point ('C', 0.89, 0.50, fill_ratio);
-  add_scaled_point ('c', 0.89, 0.71, fill_ratio);
-  add_scaled_point ('c', 0.71, 0.89, fill_ratio);
-  add_scaled_point ('C', 0.50, 0.89, fill_ratio);
-  add_scaled_point ('c', 0.29, 0.89, fill_ratio);
   add_scaled_point ('c', 0.11, 0.71, fill_ratio);
+  add_scaled_point ('c', 0.29, 0.89, fill_ratio);
+  add_scaled_point ('C', 0.50, 0.89, fill_ratio);
+  add_scaled_point ('c', 0.71, 0.89, fill_ratio);
+  add_scaled_point ('c', 0.89, 0.71, fill_ratio);
+  add_scaled_point ('C', 0.89, 0.50, fill_ratio);
+  add_scaled_point ('c', 0.89, 0.29, fill_ratio);
+  add_scaled_point ('c', 0.71, 0.11, fill_ratio);
+  add_scaled_point ('C', 0.50, 0.11, fill_ratio);
+  add_scaled_point ('c', 0.29, 0.11, fill_ratio);
+  add_scaled_point ('c', 0.11, 0.29, fill_ratio);
   add_scaled_point ('C', 0.11, 0.50, fill_ratio);
 }
 
