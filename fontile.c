@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 int SCALE=1000;
 static int overlap_solid=1;
@@ -31,6 +32,9 @@ static int fixed_width = 0;
 static int fixed_height = 0;
 static int draw_grid = 0;
 static float xtrim = 0;
+static float xspacing = 0;
+
+static const char *spacing_path = NULL;
 
 static int got_blank = -1; /* if this is non 0 we have a blank glyph! */
 
@@ -143,7 +147,6 @@ char *mem_read (char *start,
                 char *linebuf,
                 int  *len);
 
-
 static int map_pix (char pix)
 {
   int i;
@@ -225,7 +228,7 @@ char *load_component_outline (const char *name, float xoffset, float yoffset)
                 int y;
                 sscanf (buf, "    <point type='%s x='%d' y='%d'/>", &type, &x, &y);
                 type[strlen(type)-1]=0;
-                g_string_append_printf (str, "    <point type='%s' x='%d' y='%d'/>\n",  type, (int)(x + (xoffset + xtrim) * SCALE), (int)(y + yoffset * SCALE));
+                g_string_append_printf (str, "    <point type='%s' x='%d' y='%d'/>\n",  type, (int)(x + (xoffset + xtrim) * SCALE + xspacing), (int)(y + yoffset * SCALE));
               }
           }
       }
@@ -299,11 +302,41 @@ static void glyph_add_component (GString *str, const char *name, int x, int y)
         name, (int)(x * SCALE + xtrim * SCALE), y * SCALE); 
 }
 
+
+float spacing_lookup (int unicode, int *advance)
+{
+  if (spacing_path == NULL)
+    return 0;
+  FILE* file = fopen(&spacing_path[1], "r");
+  if (!file)
+    {
+      fprintf (stderr, "WARNING: failed reading spacing from %s:%s\n", spacing_path, strerror(errno));
+      return 0;
+    }
+  char line[256];
+  while (fgets(line, sizeof(line), file))
+    {
+      int codepoint;
+      float xshift;
+      int advanc;
+      sscanf (line, "%i %f %i", &codepoint, &xshift, &advanc);
+      if (unicode == codepoint)
+      {
+        if (advance)
+          *advance = advanc;
+        return xshift;
+      }
+    }
+  fclose (file);
+  return 0;
+}
+
 void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
 {
   GString *str;
   gchar utf8_chr[8]={0,0,0,0,};
   int x, y;
+  int advance = 0;
   x0++;
   x1++;
 
@@ -318,6 +351,7 @@ void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
     }
 
   g_unichar_to_utf8 (uglyphs[glyph_no], utf8_chr);
+  xspacing = spacing_lookup (uglyphs[glyph_no], &advance);
   str = g_string_new ("");
 
   if (overlap_solid)
@@ -367,7 +401,9 @@ void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
     add_grid (str, x0, y0, x1, y1);
   }
 
-  write_glyph (name, (x1-x0+1) * SCALE, uglyphs[glyph_no], str->str);
+  if (advance == 0)
+    advance = (x1-x0+1) * SCALE;
+  write_glyph (name, advance, uglyphs[glyph_no], str->str);
 
   {
     char buf[1024];
@@ -450,6 +486,7 @@ void import_includes (char **asc_source)
         PARSE_INT (SCALE,             "scale ")
         PARSE_STRING (font_variant,   "variant ")
         PARSE_STRING (font_name,      "fontname ")
+        PARSE_STRING (spacing_path,   "spacing")
 
 #undef PARSE_INT
 #undef PARSE_STRING
@@ -672,7 +709,7 @@ int main (int argc, char **argv)
       int i;
       for (i = 0; map[i].ascii; i++)
         {
-          gen_ref_glyph (&map[i], maxy-3, maxy+1);
+          gen_ref_glyph (&map[i], maxy-3, maxy);
         }
     }
   }
