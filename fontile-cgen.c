@@ -28,6 +28,9 @@ const char palette[10][28]={
 " 123 1ws3 1ws3 123   $      ",
 "                            "};
 
+/* the rotational mapping between glyphs;
+ * useful for ensuring symmetry
+ */
 const char mappings[17][4]={
 {'7', '9', '3', '1'},
 {'8', '6', '2', '4'},

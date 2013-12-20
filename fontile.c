@@ -163,7 +163,8 @@ static const char *font_variant = NULL;
 static char *asc_source = NULL;
 
 int rw, rh;
-unsigned int *fb;
+unsigned int *fb = NULL;
+unsigned int *fb2 = NULL;
 int stride;
 
 static char ufo_path[2048];
@@ -392,6 +393,19 @@ void gen_glyph (int glyph_no, int x0, int y0, int x1, int y1)
         else
           component = mapping2str (*pix);
 
+        if (component)
+          glyph_add_component (str, component, u, v);
+      }
+
+  for (y = y0; y <= y1; y++)
+    for (x = x0; x <= x1; x++)
+      {
+        int *pix = &fb2[stride * y+x];
+        int u = x - x0 + x_shift;
+        int v = y1 - y -1 + y_shift;
+        const char *component = NULL;
+
+        component = mapping2str (*pix);
         if (component)
           glyph_add_component (str, component, u, v);
       }
@@ -650,9 +664,10 @@ int main (int argc, char **argv)
       //str_chomp (linebuf);
       if (len)
         {
-          if (linebuf[0] == '(' && linebuf[1] == ' ')
+          if (linebuf[0] == '(' && /* "( " indicate start of new glyph */
+              linebuf[1] == ' ')
             {
-              if (maxy>0)
+              if (maxy>0) /* we've got a glyph */
                 {
                   if (fixed_width)
                     maxx = fixed_width - 1;
@@ -674,7 +689,10 @@ int main (int argc, char **argv)
   uglyphs = g_utf8_to_ucs4 (glyphs, -1, &n_glyphs, NULL, NULL);
               if (fb)
                 free (fb);
+              if (fb2)
+                free (fb2);
               fb = g_malloc0 (256*256 * sizeof(int));
+              fb2 = g_malloc0 (256*256 * sizeof(int));
               stride = 256;
               if (strstr (linebuf, "xtrim="))
                 xtrim = atof (strstr (linebuf, "xtrim=") + strlen("xtrim="));
@@ -684,11 +702,26 @@ int main (int argc, char **argv)
           else
             {
               int x;
+              int in_fb2 = 0;
               for (x = 0; linebuf[x]; x ++)
                 {
-                  fb[maxy * stride + x + 1] = map_pix (linebuf[x]);
-                  if (x>maxx)
-                    maxx=x;
+                  if (in_fb2)
+                  {
+                    fb2[maxy * stride + (x-in_fb2) + 1] = map_pix (linebuf[x]);
+                  }
+                  else
+                  {
+                    if (linebuf[x] == '!')
+                    {
+                      in_fb2 = x+1;
+                    }
+                    else
+                    {
+                      fb[maxy * stride + x + 1] = map_pix (linebuf[x]);
+                      if (x>maxx)
+                        maxx=x;
+                    }
+                  }
                 }
               maxy++;
             }
