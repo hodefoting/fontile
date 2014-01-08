@@ -157,6 +157,7 @@ static int map_pix (char pix)
 }
 
 
+static const char *font_family = NULL;
 static const char *font_name = NULL;
 static const char *font_variant = NULL;
 
@@ -500,6 +501,7 @@ void import_includes (char **asc_source)
         PARSE_INT (SCALE,             "scale ")
         PARSE_STRING (font_variant,   "variant ")
         PARSE_STRING (font_name,      "fontname ")
+        PARSE_STRING (font_family,    "fontfamily ")
         PARSE_STRING (spacing_path,   "spacing")
 
 #undef PARSE_INT
@@ -789,11 +791,19 @@ void gen_fontinfo (int glyph_height)
   g_string_append_printf (str, "	<string>Licenced under the SIL Open Font License, Version 1.1, available with a FAQ at: http://scripts.sil.org/OFL</string>\n");
   g_string_append_printf (str, "	<key>openTypeNameVersion</key>\n");
   g_string_append_printf (str, "	<string>Version 0.1</string>\n");
+  g_string_append_printf (str, "	<key>familyName</key>\n");
+  g_string_append_printf (str, "	<string>%s</string>\n", font_family);
   g_string_append_printf (str, "	<key>postscriptFontName</key>\n");
   g_string_append_printf (str, "	<string>%s</string>\n", font_name);
   g_string_append_printf (str, "	<key>postscriptFullName</key>\n");
   g_string_append_printf (str, "	<string>%s</string>\n", font_name);
   g_string_append_printf (str, "	<key>postscriptWeightName</key>\n");
+  g_string_append_printf (str, "	<string>%s</string>\n", font_variant);
+  g_string_append_printf (str, "	<key>styleMapFamilyName</key>\n");
+  g_string_append_printf (str, "	<string>%s</string>\n", font_family);
+  g_string_append_printf (str, "	<key>styleMapStyleName</key>\n");
+  g_string_append_printf (str, "	<string>%s</string>\n", font_variant);
+  g_string_append_printf (str, "	<key>styleName></key>\n");
   g_string_append_printf (str, "	<string>%s</string>\n", font_variant);
   g_string_append_printf (str, "    </dict>\n");
   g_string_append_printf (str, "</plist>\n");
