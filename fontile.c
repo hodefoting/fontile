@@ -33,6 +33,7 @@ static int fixed_height = 0;
 static int draw_grid = 0;
 static float xtrim = 0;
 static float xspacing = 0;
+static float underline_position = 0.0;
 
 static const char *spacing_path = NULL;
 
@@ -499,6 +500,7 @@ void import_includes (char **asc_source)
         PARSE_INT (rbearing_reduce,   "rbearing_reduce ")
         PARSE_INT (overlap_solid,     "overlap_solid ")
         PARSE_INT (SCALE,             "scale ")
+        PARSE_FLOAT (underline_position, "underline_position ")
         PARSE_STRING (font_variant,   "variant ")
         PARSE_STRING (font_name,      "fontname ")
         PARSE_STRING (font_family,    "fontfamily ")
@@ -803,8 +805,29 @@ void gen_fontinfo (int glyph_height)
   g_string_append_printf (str, "	<string>%s</string>\n", font_family);
   g_string_append_printf (str, "	<key>styleMapStyleName</key>\n");
   g_string_append_printf (str, "	<string>%s</string>\n", font_variant);
-  g_string_append_printf (str, "	<key>styleName></key>\n");
+  g_string_append_printf (str, "	<key>styleName</key>\n");
   g_string_append_printf (str, "	<string>%s</string>\n", font_variant);
+  /*
+  g_string_append_printf (str, "	<key>postscriptUnderlinePosition</key>\n");
+  g_string_append_printf (str, "	<integer>%i</integer>\n", 
+      (int) (underline_position * SCALE)   );
+  g_string_append_printf (str, "	<key>UnderlinePosition</key>\n");
+  g_string_append_printf (str, "	<integer>%i</integer>\n", 
+
+      (int) (underline_position * SCALE)   );
+  */
+  if (fixed_width)
+  {
+    g_string_append_printf (str, "	<key>postscriptIsFixedWidth</key>\n");
+    g_string_append_printf (str, "	<true/>\n");
+  }
+  else if (fixed_width)
+  {
+    g_string_append_printf (str, "	<key>postscriptIsFixedWidth</key>\n");
+    g_string_append_printf (str, "	<false/>\n");
+  }
+
+
   g_string_append_printf (str, "    </dict>\n");
   g_string_append_printf (str, "</plist>\n");
 
